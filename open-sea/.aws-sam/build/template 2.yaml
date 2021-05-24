@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: open-sea
+Globals:
+  Function:
+    Runtime: nodejs12.x
+    MemorySize: 128
+    Timeout: 3
+    Environment:
+      Variables:
+        ASSETS_TABLE_NAME:
+          Ref: Assets
+Resources:
+  GetAssetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.getAsset
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /asset
+            Method: get
+      CodeUri: GetAssetFunction
+  Assets:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: TokenId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: TokenId
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: '5'
+        WriteCapacityUnits: '5'
+Outputs:
+  HelloWorldApi:
+    Description: API Gateway endpoint URL for Prod stage for Get Asset function
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/asset/
+  HelloWorldFunction:
+    Description: Get Asset Lambda Function ARN
+    Value:
+      Fn::GetAtt:
+      - GetAssetFunction
+      - Arn
+  HelloWorldFunctionIamRole:
+    Description: Implicit IAM Role created for Get Asset function
+    Value:
+      Fn::GetAtt:
+      - GetAssetFunctionRole
+      - Arn
